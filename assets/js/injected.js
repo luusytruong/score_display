@@ -17,12 +17,15 @@ const nameFromUrl = (url) => {
 const isNumber = (name) => !isNaN(name) && Number.isInteger(Number(name));
 const isWeekTest = (name) => name.includes("week-test");
 
-const createScoreElement = (score = "") => {
+const createScoreElement = (score = "", week = false) => {
   if (!score) return;
   const scoreElement = document.createElement("span");
   scoreElement.id = "score-display";
+  const rawScore = Number(score) / 10;
   const scoreText = isNumber(score)
-    ? `Score ${(Number(score) / 10).toFixed(1)}`
+    ? `${week ? "Điểm cao nhất " : ""}${
+        Number.isInteger(rawScore) ? rawScore : rawScore.toFixed(1)
+      }`
     : score;
   scoreElement.innerText = scoreText;
   return scoreElement;
@@ -57,8 +60,8 @@ const testScoreDisplay = (name, json) => {
   const isWeekTestName = isWeekTest(name);
   if (!isNumberName && !isWeekTestName) return;
 
-  const score = json?.data || json?.score || "Error";
-  const maxScore = json?.data?.max || "No score available";
+  const score = json?.data || json?.score || "";
+  const maxScore = json?.data?.max || "";
 
   if (isNumberName) {
     waitFor(
@@ -66,7 +69,12 @@ const testScoreDisplay = (name, json) => {
       (h4) => h4.innerText === "ĐẠT" && !h4.querySelector("#score-display"),
       (h4) => {
         const scoreElement = createScoreElement(score);
-        if (scoreElement) h4.appendChild(scoreElement);
+        h4.id = "container-score";
+        h4.innerText = "";
+        if (scoreElement) {
+          scoreElement.className = "score-display";
+          h4.appendChild(scoreElement);
+        }
       }
     );
   }
@@ -80,7 +88,7 @@ const testScoreDisplay = (name, json) => {
         !tr.querySelector("#score-display"),
       (tr) => {
         const td = tr.querySelector("td:last-child");
-        const scoreElement = createScoreElement(maxScore);
+        const scoreElement = createScoreElement(maxScore, true);
         if (scoreElement) td.appendChild(scoreElement);
       }
     );
