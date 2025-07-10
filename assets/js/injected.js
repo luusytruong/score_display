@@ -1,5 +1,5 @@
 const debug = (...args) => {
-  const mode = true;
+  const mode = false;
   if (mode) console.log(...args);
 };
 
