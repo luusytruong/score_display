@@ -1,8 +1,10 @@
 #score-display {
     font-weight: bold;
-    color: #00a63e;
-    background-color: #00a63e22;
-    padding: 2px 4px;
-    border-radius: 4px;
-    margin-left: 10px;
+    color: #2ca87f;
+    background-color: #2ca87f22;
+    padding: 4px 8px;
+    border-radius: 44px;
+    margin-left: 8px;
+    transition: background-color 0.3s ease;
+    text-transform: none;
 }

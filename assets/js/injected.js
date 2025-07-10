@@ -22,7 +22,7 @@ const createScoreElement = (score = "") => {
   const scoreElement = document.createElement("span");
   scoreElement.id = "score-display";
   const scoreText = isNumber(score)
-    ? `Max ${(Number(score) / 10).toFixed(1)}`
+    ? `Score ${(Number(score) / 10).toFixed(1)}`
     : score;
   scoreElement.innerText = scoreText;
   return scoreElement;
@@ -32,15 +32,18 @@ const waitFor = (
   selector,
   conditionFn,
   onSuccess,
-  maxTries = 2004,
+  maxTries = 204,
   intervalTime = 102
 ) => {
   let tries = 0;
+  debug("Waiting for:", selector);
   const interval = setInterval(() => {
     tries++;
     const elements = document.querySelectorAll(selector);
+    debug(elements);
     elements.forEach((el) => {
       if (conditionFn(el)) {
+        debug("Condition met for:", el);
         clearInterval(interval);
         onSuccess(el);
       }
@@ -60,8 +63,7 @@ const testScoreDisplay = (name, json) => {
   if (isNumberName) {
     waitFor(
       "h4",
-      (h4) =>
-        h4.innerText.includes("Đạt") && !h4.querySelector("#score-display"),
+      (h4) => h4.innerText === "ĐẠT" && !h4.querySelector("#score-display"),
       (h4) => {
         const scoreElement = createScoreElement(score);
         if (scoreElement) h4.appendChild(scoreElement);
