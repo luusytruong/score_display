@@ -19,7 +19,6 @@ function generateFormattedHTMLFromQuizJSON(data) {
   let html = '<div style="font-family: Arial; line-height: 1.6;">';
 
   let currentId = 0;
-  console.log("length: ", data.length);
   let indexQuestion = 1;
   for (let i = 0; i < data.length; i++) {
     const questionText = stripHtml(data[i].question_direction || "");
@@ -33,11 +32,9 @@ function generateFormattedHTMLFromQuizJSON(data) {
       if (data[i].answer_option.length !== 0) {
         html += `<p style="margin-left: 20px; font-style: italic;">(Kéo thả đáp án thích hợp vào chỗ trống)</p>`;
         html = generateOptions(data, i, html);
-
         // render ra đáp án của câu hỏi
         let j = i + 1;
         for (; j < data.length; j++) {
-          console.log("so sánh: ", currentId, data[j].group_id);
           if (currentId === data[j].group_id) {
             html += `<p><strong>${data[j].question_direction}</strong></p>`;
           } else break;
@@ -50,7 +47,17 @@ function generateFormattedHTMLFromQuizJSON(data) {
     ) {
       html += `<p style="margin-left: 20px; font-style: italic;">(Nhóm các phát biểu Đúng/Sai)</p>`;
       let j = i + 1;
-      console.log("có radio: ", currentId, data[i]);
+      for (; j < data.length; j++) {
+        if (currentId === data[j].group_id) {
+          html += `<p><strong>${j - i}) ${
+            data[j].question_direction
+          }</strong></p>`;
+          html = generateOptions(data, j, html);
+        } else break;
+      }
+      i = j - 1;
+    } else if(data[i].question_type === "group-input"){
+      let j = i + 1;
       for (; j < data.length; j++) {
         if (currentId === data[j].group_id) {
           html += `<p><strong>${j - i}) ${
