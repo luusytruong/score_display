@@ -18,11 +18,9 @@
 
 .score-display {
     font-weight: bold !important;
-    padding: 8px !important;
-    border-radius: 9999px !important;
-    margin: 0 0 16px 0 !important;
+    background-color: transparent !important;
+    margin: 0 !important;
     font-size: 44px;
-    aspect-ratio: 1;
 }
 
 #container-score {
