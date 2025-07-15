@@ -43,7 +43,6 @@ const waitFor = (
   const interval = setInterval(() => {
     tries++;
     const elements = document.querySelectorAll(selector);
-    debug(elements);
     elements.forEach((el) => {
       if (conditionFn(el)) {
         debug("Condition met for:", el);
@@ -95,16 +94,25 @@ const testScoreDisplay = (name, json) => {
   }
 };
 
+function sendMessage(...args) {
+  window.postMessage(
+    {
+      source: "page-script",
+      payload: args,
+    },
+    "*"
+  );
+}
+
 (function injected() {
   // Hook fetch
   const origFetch = window.fetch;
   window.fetch = async (...args) => {
     const res = await origFetch(...args);
     const clone = res.clone();
-
     const name = nameFromUrl(args[0]);
     const isJSON = res.headers
-      .get("content-type")
+      ?.get("content-type")
       ?.includes("application/json");
 
     if (isJSON) {
@@ -134,7 +142,10 @@ const testScoreDisplay = (name, json) => {
         try {
           const json = JSON.parse(this.responseText);
           testScoreDisplay(name, json);
-          debug("✅ XHR JSON", name);
+          if (json?.data?.[0]?.test) {
+            sendMessage(json?.data?.[0]?.test);
+          }
+          debug("✅ XHR JSON", json);
         } catch (e) {
           console.warn("❌ JSON parse failed:", e);
         }

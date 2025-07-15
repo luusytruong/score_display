@@ -1,0 +1,16 @@
+#score-display {
+  font-family: Arial, sans-serif;
+  margin: 20px;
+}
+
+.score-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  user-select: none;
+}
+
+body{
+  width: 100svh;
+  min-width: 400px;
+}
