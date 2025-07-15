@@ -11,6 +11,7 @@
 }
 
 body{
-  width: 100svh;
+  width: 100%;
   min-width: 400px;
+  min-height: 400px;
 }

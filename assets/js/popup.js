@@ -1,46 +1,72 @@
-// hàm chuyển json thành html
-
-function generateFormattedHTMLFromQuizJSON(jsonString) {
-  let data = [];
-  try {
-    data = JSON.parse(jsonString);
-  } catch (e) {
-    console.error("JSON không hợp lệ:", e);
-    return "";
+function generateOptions(data, i, html) {
+  let newHtml = html;
+  if (data[i].answer_option && data[i].answer_option.length > 0) {
+    data[i].answer_option.forEach((opt, i) => {
+      const label =
+        data[i].question_type === "checkbox"
+          ? String.fromCharCode(65 + i)
+          : getLabelByType(data[i], i);
+      newHtml += `<p style="margin-left: 20px;">${label}. ${stripHtml(
+        opt.value
+      )}</p>`;
+    });
   }
+  return newHtml;
+}
 
+// hàm chuyển json thành html
+function generateFormattedHTMLFromQuizJSON(data) {
   let html = '<div style="font-family: Arial; line-height: 1.6;">';
 
-  data.forEach((item, index) => {
-    const questionText = stripHtml(item.question_direction || "");
-    html += `<p><strong>Câu ${index + 1}:</strong> ${questionText}</p>`;
-
-    // Hiển thị các lựa chọn
-    if (item.answer_option && item.answer_option.length > 0) {
-      item.answer_option.forEach((opt, i) => {
-        const label =
-          item.question_type === "checkbox"
-            ? String.fromCharCode(65 + i)
-            : getLabelByType(item, i);
-        html += `<p style="margin-left: 20px;">${label}. ${stripHtml(
-          opt.value
-        )}</p>`;
-      });
-    }
-
+  let currentId = 0;
+  console.log("length: ", data.length);
+  let indexQuestion = 1;
+  for (let i = 0; i < data.length; i++) {
+    const questionText = stripHtml(data[i].question_direction || "");
+    html += `<p><strong>Câu ${indexQuestion}:</strong> ${questionText}</p>`;
+    indexQuestion++;
+    // lưu giá trị id của câu hỏi hiện tại
+    currentId = data[i].id;
     // Nếu là kiểu kéo thả (drag_drop) không có answer_option ở câu con
-    if (item.question_type === "drag_drop" && item.answer_option.length === 0) {
-      html += `<p style="margin-left: 20px; font-style: italic;">(Kéo thả đáp án thích hợp vào chỗ trống)</p>`;
-    }
+    if (data[i].question_type === "drag_drop") {
+      //nếu là câu hỏi
+      if (data[i].answer_option.length !== 0) {
+        html += `<p style="margin-left: 20px; font-style: italic;">(Kéo thả đáp án thích hợp vào chỗ trống)</p>`;
+        html = generateOptions(data, i, html);
 
-    // Nếu là group-radio, chỉ tiêu đề, không lựa chọn
-    if (
-      item.question_type === "group-radio" &&
-      item.answer_option.length === 0
+        // render ra đáp án của câu hỏi
+        let j = i + 1;
+        for (; j < data.length; j++) {
+          console.log("so sánh: ", currentId, data[j].group_id);
+          if (currentId === data[j].group_id) {
+            html += `<p><strong>${data[j].question_direction}</strong></p>`;
+          } else break;
+        }
+        i = j - 1;
+      }
+    } else if (
+      data[i].question_type === "group-radio" &&
+      data[i].answer_option.length === 0
     ) {
       html += `<p style="margin-left: 20px; font-style: italic;">(Nhóm các phát biểu Đúng/Sai)</p>`;
+      let j = i + 1;
+      console.log("có radio: ", currentId, data[i]);
+      for (; j < data.length; j++) {
+        if (currentId === data[j].group_id) {
+          html += `<p><strong>${j - i}) ${
+            data[j].question_direction
+          }</strong></p>`;
+          html = generateOptions(data, j, html);
+        } else break;
+      }
+      i = j - 1;
     }
-  });
+    // Hiển thị các lựa chọn 4 đáp án ##
+    else if (data[i].answer_option.length !== 0)
+      html = generateOptions(data, i, html);
+    // những loại mới
+    else html = generateOptions(data, i, html);
+  }
 
   html += "</div>";
   return html;
@@ -66,28 +92,12 @@ function getLabelByType(item, index) {
 ///
 
 document.addEventListener("DOMContentLoaded", async () => {
-  const scoreBody = document.getElementById("score-body");
-  // Retrieve scores from chrome.storage
-  chrome.storage.local.get("scores", (data) => {
-    const scores = data.scores || [];
-    scoreBody.innerHTML = "";
-    scores.forEach((score) => {
-      const row = document.createElement("tr");
-      row.innerHTML = `
-        <td>${score.testName}</td>
-        <td>${score.score}</td>
-        <td>${score.date}</td>
-        `;
-      scoreBody.appendChild(row);
-    });
-  });
-
   const downloadButton = document.getElementById("download-scores");
   let json = await getFromStorage("question");
-  json = JSON.stringify(json);
   const htmlContent = generateFormattedHTMLFromQuizJSON(json);
+  // const htmlContent = generateFormattedHTMLFromQuizJSON(TEMP_JSON_DATA);
 
-  document.getElementById("show").innerHTML= htmlContent;
+  document.getElementById("show").innerHTML = htmlContent;
 
   // Handle Download JSON button click
   downloadButton.addEventListener("click", () => {
