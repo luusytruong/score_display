@@ -3,26 +3,19 @@
   "name": "Score Display",
   "version": "1.0",
   "description": "Display test scores on lms system.",
+  "icons": {
+    "128": "assets/icons/icon.png"
+  },
   "action": {
     "default_popup": "html/popup.html",
     "default_icon": {
-      "16": "assets/icons/icon16.png",
-      "32": "assets/icons/icon32.png",
-      "128": "assets/icons/icon128.png"
+      "128": "assets/icons/icon.png"
     }
   },
-  "permissions": [
-    "activeTab",
-    "tabs",
-    "scripting",
-    "storage",
-    "clipboardWrite",
-    "clipboardRead",
-    "background"
-  ],
+  "permissions": ["storage", "unlimitedStorage"],
   "content_scripts": [
     {
-      "matches": ["<all_urls>"],
+      "matches": ["https://lms.ictu.edu.vn/*", "file:///*"],
       "js": ["assets/js/content.js"],
       "css": ["assets/css/style.css"],
       "run_at": "document_start"
@@ -31,12 +24,7 @@
   "web_accessible_resources": [
     {
       "resources": ["assets/js/injected.js"],
-      "matches": ["<all_urls>"]
+      "matches": ["https://lms.ictu.edu.vn/*", "file:///*"]
     }
-  ],
-  "icons": {
-    "16": "assets/icons/icon16.png",
-    "32": "assets/icons/icon32.png",
-    "128": "assets/icons/icon128.png"
-  }
+  ]
 }

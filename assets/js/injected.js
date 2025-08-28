@@ -105,26 +105,6 @@ function sendMessage(...args) {
 }
 
 (function injected() {
-  // Hook fetch
-  const origFetch = window.fetch;
-  window.fetch = async (...args) => {
-    const res = await origFetch(...args);
-    const clone = res.clone();
-    const name = nameFromUrl(args[0]);
-    const isJSON = res.headers
-      ?.get("content-type")
-      ?.includes("application/json");
-
-    if (isJSON) {
-      const json = await clone.json();
-      testScoreDisplay(name, json);
-      debug("✅ Fetch JSON", name);
-    }
-
-    return res;
-  };
-
-  // Hook XHR
   const origOpen = XMLHttpRequest.prototype.open;
   XMLHttpRequest.prototype.open = function (method, url, ...rest) {
     this._url = url;
@@ -135,21 +115,14 @@ function sendMessage(...args) {
   XMLHttpRequest.prototype.send = function (...args) {
     this.addEventListener("load", function () {
       const name = nameFromUrl(this._url);
-      const isJSON =
-        this.getResponseHeader("content-type")?.includes("application/json");
-
-      if (isJSON) {
-        try {
-          const json = JSON.parse(this.responseText);
-          testScoreDisplay(name, json);
-          if (json?.data?.[0]?.test) {
-            sendMessage(json?.data?.[0]?.test);
-          }
-          debug("✅ XHR JSON", json);
-        } catch (e) {
-          console.warn("❌ JSON parse failed:", e);
-        }
-      }
+      try {
+        const json = JSON.parse(this.responseText);
+        const score = json?.score || json?.data?.max;
+        const test = json?.data?.[0]?.test;
+        if (score) testScoreDisplay(name, json);
+        if (test) sendMessage(test);
+        debug("✅ XHR JSON", json);
+      } catch {}
     });
     return origSend.apply(this, args);
   };
