@@ -65,7 +65,9 @@ const testScoreDisplay = (name, json) => {
   if (isNumberName) {
     waitFor(
       "h4",
-      (h4) => h4.innerText === "ĐẠT" && !h4.querySelector("#score-display"),
+      (h4) =>
+        (h4.innerText === "ĐẠT" || h4.innerText === "CHƯA ĐẠT") &&
+        !h4.querySelector("#score-display"),
       (h4) => {
         const scoreElement = createScoreElement(score);
         h4.id = "container-score";
